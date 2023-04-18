@@ -1,0 +1,58 @@
+extends Node2D
+
+var isDragging = false
+var selectedUnits = []
+var dragStart = Vector2()
+var selectedRectangle = RectangleShape2D.new()
+
+@onready var playerCameraGroup = get_tree().get_nodes_in_group("PlayerCamera")
+@onready var playerCamera = playerCameraGroup[0]
+
+func _physics_process(delta):
+	if Input.is_action_just_pressed("RightClick"):
+		
+		var clickPosition = get_global_mouse_position()
+		
+		if selectedUnits.size() > 0:
+			for selection in selectedUnits:
+				
+				if selection.collider.is_in_group("Selectable"):
+					selection.collider.beanSoldierAgent.target_position = clickPosition
+					selection.collider.speed = 300
+					
+	if isDragging:
+		queue_redraw()
+
+func _unhandled_input(event):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		
+		if event.is_pressed():
+				isDragging = true
+				dragStart = get_global_mouse_position()
+				for selection in selectedUnits:
+					
+					if selection.collider.is_in_group("Selectable"):
+						selection.collider.DisableSelection()
+						selectedUnits = []
+		
+		elif isDragging == true:
+			isDragging = false
+			queue_redraw()
+			var dragEnd = get_global_mouse_position()
+			selectedRectangle.size = (dragEnd - dragStart).abs()
+			
+			var space = get_world_2d().direct_space_state
+			var query = PhysicsShapeQueryParameters2D.new()
+			query.set_shape(selectedRectangle)
+			query.transform = Transform2D (0, (dragEnd + dragStart) / 2)
+			selectedUnits = space.intersect_shape(query)
+			
+			for selection in selectedUnits:
+				var selectionCollision = selection.collider
+				if selectionCollision.is_in_group("Selectable"):
+					selectionCollision.EnableSelection()
+					print(selectedUnits.size())
+		
+func _draw():
+	if isDragging == true:
+		draw_rect(Rect2 (dragStart, get_global_mouse_position() - dragStart), Color.DARK_GREEN, false, 2.0)
