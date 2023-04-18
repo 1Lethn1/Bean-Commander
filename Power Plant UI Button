@@ -1,0 +1,24 @@
+extends Button
+
+@onready var powerPlantRedTimer = $ProgressBar/PowerPlant_Red_Timer
+@onready var powerPlantRedProgressBar = $ProgressBar
+
+func _on_pressed():
+	
+	if MOUSE_BUTTON_MASK_LEFT && powerPlantRedProgressBar.value == 0:
+		
+		powerPlantRedTimer.start()
+		
+		if powerPlantRedProgressBar.value == 100:
+			powerPlantRedProgressBar.value = 0
+			
+	elif MOUSE_BUTTON_MASK_RIGHT && powerPlantRedProgressBar.value >= 1:
+		powerPlantRedTimer.stop()
+		powerPlantRedProgressBar.value = 0
+		button_mask = MOUSE_BUTTON_MASK_LEFT
+	
+func _on_power_plant_red_timer_timeout():
+	powerPlantRedProgressBar.value += 1
+	
+	if powerPlantRedProgressBar.value >= 1:
+		button_mask = MOUSE_BUTTON_MASK_RIGHT
