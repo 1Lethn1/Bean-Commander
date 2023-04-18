@@ -1,0 +1,28 @@
+extends CharacterBody2D
+
+@onready var selected = $Selected
+@onready var beanSoldierAgent = $NavigationAgent2D
+
+@export var player = 0
+@export var speed = 300
+
+func _physics_process(delta):
+	var currentLocation =  global_position
+	var nextLocation = beanSoldierAgent.get_next_path_position()
+	var newVelocity = (nextLocation - currentLocation).normalized() * speed
+	
+	beanSoldierAgent.set_velocity(newVelocity)
+
+func EnableSelection():
+	selected.visible = true
+	
+func DisableSelection():
+	selected.visible = false
+
+func _on_navigation_agent_2d_velocity_computed(safe_velocity):
+	velocity = velocity.move_toward(safe_velocity, 100)
+	move_and_slide()
+
+
+func _on_navigation_agent_2d_navigation_finished():
+	speed = 0
